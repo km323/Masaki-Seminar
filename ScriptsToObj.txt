@@ -1,0 +1,20 @@
+CameraColltroller.cs->Main Camera
+
+GhostCharacter.cs
+GhostController.cs->Ghost
+
+PlayerLifeControl.cs
+Third PerSon Character.cs
+Third PerSon User Control.cs->Player
+
+PlayerPrefsX.cs->Extra
+
+StoneScript.cs->Stone
+
+SwitchScript.cs->Switch
+
+UIScript->UI
+
+
+
+
