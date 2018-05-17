@@ -23,7 +23,11 @@ public class SwitchScript : MonoBehaviour
 
             //ghostStone.SetActive(false);
         }
+        //ghostStone.GetComponent<Rigidbody>().isKinematic = false;
+        //ghostStone.GetComponent<Rigidbody>().AddForce(0, -10, 0);
 
+        //stone.GetComponent<Rigidbody>().isKinematic = false;
+        //stone.GetComponent<Rigidbody>().AddForce(0, -10, 0);
     }
 
     // Update is called once per frame

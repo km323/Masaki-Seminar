@@ -196,7 +196,7 @@ public class ReplayScript : MonoBehaviour
         //    GhostDisapear();
         //}
 
-        Debug.Log("DoReplay" +doReplay);
+        //Debug.Log("DoReplay" +doReplay);
     }
     #endregion
 
@@ -299,34 +299,43 @@ public class ReplayScript : MonoBehaviour
             }
         }
         replayCount++;
-        if (replayCount - lastDeathCount >= 0.1)
+
+        for(int i=0;i<new_jumps.Length;i++)
         {
-            doReplay = false;
-            PlayerPrefsX.SetBool("ReplayFlag", doReplay);
-        }
-
-        if (!doReplay)
-        {
-            //移動を停止
-            ghost.GetComponent<GhostControl>().g_VeclocityX = 0;
-            ghost.GetComponent<GhostControl>().g_duringJump = false;
-
-            //エフェクト位置をゴースト現在位置まで移動
-            Eff_Disapear.transform.position = ghost.transform.position;
-
-            //エフェクト再生
-            if (eff_Playable)
+            if(new_jumps[i])
             {
-                ParSys_Disapear.Play();
-                eff_Playable = false;
+                Debug.Log("True");
             }
-            ghostBody.SetActive(false);
-            ghostHead.SetActive(false);
-
-            if (!ParSys_Disapear.isPlaying)
-                ParSys_Disapear.Stop();
         }
-        Debug.Log("replayCount" + replayCount);
+
+        //if (replayCount - lastDeathCount >= 0.1)
+        //{
+        //    doReplay = false;
+        //    PlayerPrefsX.SetBool("ReplayFlag", doReplay);
+        //}
+
+        //if (!doReplay)
+        //{
+        //    //移動を停止
+        //    ghost.GetComponent<GhostControl>().g_VeclocityX = 0;
+        //    ghost.GetComponent<GhostControl>().g_duringJump = false;
+
+        //    //エフェクト位置をゴースト現在位置まで移動
+        //    Eff_Disapear.transform.position = ghost.transform.position;
+
+        //    //エフェクト再生
+        //    if (eff_Playable)
+        //    {
+        //        ParSys_Disapear.Play();
+        //        eff_Playable = false;
+        //    }
+        //    ghostBody.SetActive(false);
+        //    ghostHead.SetActive(false);
+
+        //    if (!ParSys_Disapear.isPlaying)
+        //        ParSys_Disapear.Stop();
+        //}
+        //Debug.Log("replayCount" + replayCount);
     }
 
     /// <summary>

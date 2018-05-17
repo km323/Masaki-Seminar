@@ -58,13 +58,13 @@ public class PlayerControl : MonoBehaviour
     private Vector3 velocity;
     // キャラにアタッチされるアニメーターへの参照
     private Animator anim;
-    
+
     /// <summary>
     /// 接地判定用Ray
     /// </summary>
     //　レイを飛ばす位置
     Ray ray;
-    public const float DistanceToGround = 0.8f;
+    public const float DistanceToGround = 0.07f;
     //　レイが地面に到達しているかどうか
     private bool isGround = false;
 
@@ -98,13 +98,10 @@ public class PlayerControl : MonoBehaviour
         {
             if (isGround && !anim.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
             {
-                player_NowState = PlayerState.Move;
                 g_duringJump = true;
                 anim.SetBool("Jump", true);
             }
         }
-
-
         if (g_VeclocityX > 0 || g_VeclocityX < 0)
         {
             duringRun = true;
@@ -114,7 +111,7 @@ public class PlayerControl : MonoBehaviour
             duringRun = false;
         }
 
-        Debug.Log("AddCount"+addCount);
+        //Debug.Log("AddCount"+addCount);
 
     }
 
@@ -124,8 +121,6 @@ public class PlayerControl : MonoBehaviour
 
         #region 情報保存
         //プレイヤーが移動しているかどうかをチェック
-
-
         if (player_NowState == PlayerState.Move)
         {
             //もし保存できる最大値以下だったら
@@ -139,12 +134,6 @@ public class PlayerControl : MonoBehaviour
                 Debug.Log("MaxWarining");
             }
         }
-        if (player_NowState == PlayerState.Idle)
-        {
-            //止まったら、移動するまでの時間を記録する。
-            idle_Time += Time.deltaTime;
-        }
-
         //保存用の配列に値を再代入する
         for (int i = 0; i < dataList.Count; i++)
         {
@@ -152,22 +141,30 @@ public class PlayerControl : MonoBehaviour
             outArea.GetComponent<ReplayScript>().jumps[i] = dataList[i].m_Jump;
             outArea.GetComponent<ReplayScript>().times[i] = dataList[i].time;
         }
+        if (player_NowState == PlayerState.Idle)
+        {
+            //止まったら、移動するまでの時間を記録する。
+            idle_Time += Time.deltaTime;
+        }
         #endregion
 
         // 以下、キャラクターの移動処理
         velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
 
         velocity *= Speed;       // 移動速度を掛ける
-                            
+
         // 左右のキー入力でキャラクターを移動させる
         if (!turnOverEnable)
             transform.localPosition += velocity * Time.fixedDeltaTime;
+
+        CheckPlayerIdleState();
 
         JumpFunction();
 
         ChangeDirection();
 
-        CheckPlayerIdleState();
+
+
     }
     void JumpFunction()
     {
@@ -192,7 +189,6 @@ public class PlayerControl : MonoBehaviour
         }
         else
         {
-
             isGround = false;
         }
         Debug.DrawLine(ray.origin, ray.origin - new Vector3(0, DistanceToGround, 0), Color.red, 0.1f);
@@ -223,8 +219,8 @@ public class PlayerControl : MonoBehaviour
                 turnOverEnable = false;
             }
         }
-        
-        if (turnOverEnable&& playerDirection == Direction.Left)
+
+        if (turnOverEnable && playerDirection == Direction.Left)
         {
             if (transform.eulerAngles.y >= 20)
             {
@@ -272,13 +268,15 @@ public class PlayerControl : MonoBehaviour
     /// </summary>
     public void CheckPlayerIdleState()
     {
-
-        //Debug.Log(addCount);
-        if (g_VeclocityX == 0&&isGround)
+        if (g_VeclocityX == 0 && isGround)
         {
             player_NowState = PlayerState.Idle;
         }
-        else
+        else if(!isGround)
+        {
+            player_NowState = PlayerState.Move;
+        }
+        else if(g_VeclocityX!=0)
         {
             player_NowState = PlayerState.Move;
         }
