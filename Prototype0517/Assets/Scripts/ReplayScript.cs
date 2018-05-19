@@ -77,6 +77,8 @@ public class ReplayScript : MonoBehaviour
     int arrayCount;
     //velocity
     public float[] velocitys = new float[MAXTIME];
+    //horizontal
+    public float[] horizontals = new float[MAXTIME];
     //m_jump
     public bool[] jumps = new bool[MAXTIME];
     //Time
@@ -84,6 +86,8 @@ public class ReplayScript : MonoBehaviour
 
     //h
     float[] new_velocitys = new float[MAXTIME];
+    //horizontal
+    float[] new_horizontals = new float[MAXTIME];
     //m_jump
     bool[] new_jumps = new bool[MAXTIME];
     //Time
@@ -191,10 +195,10 @@ public class ReplayScript : MonoBehaviour
 
         CheckPlayerLife();
 
-        //if (deadForZeroLife)
-        //{
-        //    GhostDisapear();
-        //}
+        if (deadForZeroLife)
+        {
+            GhostDisapear();
+        }
 
         //Debug.Log("DoReplay" +doReplay);
     }
@@ -208,12 +212,13 @@ public class ReplayScript : MonoBehaviour
     /// </summary>
     public void GhostDisapear()
     {
-        //if (Vector3.Distance(death_Pos, ghost.transform.position) < 0.3 &&
-        //    Vector3.Distance(death_Pos, ghost.transform.position) > 0 &&
-        if (!doReplay)
+        if (Vector3.Distance(death_Pos, ghost.transform.position) < 0.3 &&
+            Vector3.Distance(death_Pos, ghost.transform.position) > 0 &&
+       !doReplay)
         {
             //移動を停止
             ghost.GetComponent<GhostControl>().g_VeclocityX = 0;
+            ghost.GetComponent<GhostControl>().g_VeclocityY = 0;
             ghost.GetComponent<GhostControl>().g_duringJump = false;
 
             //エフェクト位置をゴースト現在位置まで移動
@@ -243,6 +248,7 @@ public class ReplayScript : MonoBehaviour
         {
             //移動情報をplayerPrefsXに保存
             PlayerPrefsX.SetFloatArray("Velocitys", velocitys);
+            PlayerPrefsX.SetFloatArray("Horizontals", horizontals);
             PlayerPrefsX.SetFloatArray("Times", times);
             PlayerPrefsX.SetBoolArray("jumps", jumps);
             PlayerPrefs.SetInt("Count", player.GetComponent<PlayerControl>().dataList.Count);
@@ -281,6 +287,7 @@ public class ReplayScript : MonoBehaviour
             ghostExist_Flag = true;
             //新しい配列に入れる
             new_velocitys = PlayerPrefsX.GetFloatArray("Velocitys");
+            new_horizontals = PlayerPrefsX.GetFloatArray("Horizontals");
             new_times = PlayerPrefsX.GetFloatArray("Times");
             new_jumps = PlayerPrefsX.GetBoolArray("jumps");
             arrayCount = PlayerPrefs.GetInt("Count");
@@ -300,41 +307,28 @@ public class ReplayScript : MonoBehaviour
         }
         replayCount++;
 
-        for(int i=0;i<new_jumps.Length;i++)
+        for (int i = 0; i < new_jumps.Length; i++)
         {
-            if(new_jumps[i])
+            if (new_jumps[i])
             {
                 Debug.Log("True");
             }
         }
 
-        //if (replayCount - lastDeathCount >= 0.1)
-        //{
-        //    doReplay = false;
-        //    PlayerPrefsX.SetBool("ReplayFlag", doReplay);
-        //}
+        if (replayCount - lastDeathCount >= 0.1)
+        {
+            doReplay = false;
+            PlayerPrefsX.SetBool("ReplayFlag", doReplay);
+        }
 
-        //if (!doReplay)
-        //{
-        //    //移動を停止
-        //    ghost.GetComponent<GhostControl>().g_VeclocityX = 0;
-        //    ghost.GetComponent<GhostControl>().g_duringJump = false;
+        if (!doReplay)
+        {
+            //移動を停止
+            ghost.GetComponent<GhostControl>().g_VeclocityX = 0;
+            ghost.GetComponent<GhostControl>().g_VeclocityY = 0;
+            ghost.GetComponent<GhostControl>().g_duringJump = false;
 
-        //    //エフェクト位置をゴースト現在位置まで移動
-        //    Eff_Disapear.transform.position = ghost.transform.position;
-
-        //    //エフェクト再生
-        //    if (eff_Playable)
-        //    {
-        //        ParSys_Disapear.Play();
-        //        eff_Playable = false;
-        //    }
-        //    ghostBody.SetActive(false);
-        //    ghostHead.SetActive(false);
-
-        //    if (!ParSys_Disapear.isPlaying)
-        //        ParSys_Disapear.Stop();
-        //}
+        }
         //Debug.Log("replayCount" + replayCount);
     }
 
@@ -347,6 +341,7 @@ public class ReplayScript : MonoBehaviour
         if (ghostExist_Flag)
         {
             ghost.GetComponent<GhostControl>().g_VeclocityX = new_velocitys[i];
+            ghost.GetComponent<GhostControl>().g_VeclocityY = new_horizontals[i];
             ghost.GetComponent<GhostControl>().g_duringJump = new_jumps[i];
         }
     }

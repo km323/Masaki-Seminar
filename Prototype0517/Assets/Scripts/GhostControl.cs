@@ -17,7 +17,7 @@ public class GhostControl : MonoBehaviour
     public float Speed = 7.0f;
     bool duringRun = false;
     public float g_VeclocityX;
-
+    public float g_VeclocityY;
     //方向変更用
     Direction playerDirection;
     bool turnOverEnable = false;
@@ -32,36 +32,25 @@ public class GhostControl : MonoBehaviour
     private Vector3 velocity;
     // キャラにアタッチされるアニメーターへの参照
     private Animator anim;
-
-    /// <summary>
-    /// 接地判定用Ray
-    /// </summary>
-    //　レイを飛ばす位置
-    Ray ray;
-    public const float DistanceToGround = 0.8f;
-    //　レイが地面に到達しているかどうか
-    private bool isGround = false;
+    
     // 初期化
     void Start()
     {
         outArea = GameObject.Find("OutArea");
-        playerDirection = Direction.Right;
+        playerDirection = Direction.Up;
         // Animatorコンポーネントを取得する
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
     }
     private void Update()
     {
-        // Animator側で設定している"Speed"パラメタにg_VeclocityXを渡す
-        anim.SetFloat("Speed", g_VeclocityX);
         anim.SetBool("Jump", g_duringJump);
         anim.SetBool("Run", duringRun);
         anim.speed = animSpeed;
 
 
         rb.useGravity = true;//ジャンプ中に重力を切るので、それ以外は重力の影響を受けるようにする
-
-        if (g_VeclocityX > 0 || g_VeclocityX < 0)
+        if (g_VeclocityX > 0 || g_VeclocityX < 0 || g_VeclocityY < 0 || g_VeclocityY > 0)
         {
             duringRun = true;
         }
@@ -74,9 +63,9 @@ public class GhostControl : MonoBehaviour
     // 以下、メイン処理.リジッドボディと絡めるので、FixedUpdate内で処理を行う.
     void FixedUpdate()
     {
-
+        ChangeDirection();
         // 以下、キャラクターの移動処理
-        velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
+        velocity = new Vector3(g_VeclocityX, 0, -g_VeclocityY);        // 左右のキー入力からX軸方向の移動量を取得
 
         velocity *= Speed;       // 移動速度を掛ける
 
@@ -85,24 +74,7 @@ public class GhostControl : MonoBehaviour
             transform.localPosition += velocity * Time.fixedDeltaTime;
 
         JumpFunction();
-
-        ChangeDirection();
-
-    }
-    void CheckisGrounded()
-    {
-        RaycastHit hit;
-        ray = new Ray(transform.position, Vector3.down);
-        if (Physics.Raycast(ray, out hit, DistanceToGround))
-        {
-            isGround = true;
-        }
-        else
-        {
-
-            isGround = false;
-        }
-        Debug.DrawLine(ray.origin, ray.origin - new Vector3(0, DistanceToGround, 0), Color.red, 0.1f);
+        
     }
     void JumpFunction()
     {
@@ -119,51 +91,94 @@ public class GhostControl : MonoBehaviour
     }
     void ChangeDirection()
     {
-        if (playerDirection == Direction.Right)
+        if (g_VeclocityX != 0)
+        {
+            g_VeclocityY = 0;
+        }
+        if (g_VeclocityY != 0)
+        {
+            g_VeclocityX = 0;
+        }
+        if (playerDirection == Direction.Up)
         {
             if (g_VeclocityX < 0)
             {
-                turnOverEnable = true;
+                playerDirection = Direction.Down;
+                transform.Rotate(0, 180, 0);
             }
-            if (turnOverEnable)
+            if (g_VeclocityY < 0)
             {
-                if (transform.eulerAngles.y < 240)
-                    transform.Rotate(new Vector3(0, 15, 0));
-                else
-                {
-                    playerDirection = Direction.Left;
-                    turnOverEnable = false;
-                }
+                playerDirection = Direction.Left;
+                transform.Rotate(0, -90, 0);
+                //g_VeclocityY = 0;
+            }
+            if (g_VeclocityY > 0)
+            {
+                playerDirection = Direction.Right;
+                transform.Rotate(0, 90, 0);
+                //g_VeclocityY = 0;
             }
         }
+        if (playerDirection == Direction.Down)
+        {
+            if (g_VeclocityX > 0)
+            {
+                playerDirection = Direction.Up;
+                transform.Rotate(0, -180, 0);
+            }
+            if (g_VeclocityY < 0)
+            {
+                playerDirection = Direction.Left;
+                transform.Rotate(0, 90, 0);
+                //g_VeclocityY = 0;
+            }
+            if (g_VeclocityY > 0)
+            {
+                playerDirection = Direction.Right;
+                transform.Rotate(0, -90, 0);
+                //g_VeclocityY = 0;
+            }
+        }
+
         if (playerDirection == Direction.Left)
         {
             if (g_VeclocityX > 0)
             {
-                turnOverEnable = true;
+                playerDirection = Direction.Up;
+                transform.Rotate(0, 90, 0);
+                //g_VeclocityX = 0;
             }
-            if (turnOverEnable)
+            if (g_VeclocityX < 0)
             {
-                if (transform.eulerAngles.y >= 20)
-                {
-                    transform.Rotate(new Vector3(0, 15, 0));
-                }
-                else
-                {
-                    playerDirection = Direction.Up;
-                }
+                playerDirection = Direction.Down;
+                transform.Rotate(0, -90, 0);
+                //g_VeclocityX = 0;
             }
-        }
-        if (playerDirection == Direction.Up)
-        {
-            if (transform.eulerAngles.y < 80)
-            {
-                transform.Rotate(new Vector3(0, 15, 0));
-            }
-            else
+            if (g_VeclocityY > 0)
             {
                 playerDirection = Direction.Right;
-                turnOverEnable = false;
+                transform.Rotate(0, 180, 0);
+            }
+        }
+
+        if (playerDirection == Direction.Right)
+        {
+            if (g_VeclocityX > 0)
+            {
+                playerDirection = Direction.Up;
+                transform.Rotate(0, -90, 0);
+                // g_VeclocityX = 0;
+            }
+            if (g_VeclocityX < 0)
+            {
+                playerDirection = Direction.Down;
+                transform.Rotate(0, 90, 0);
+                // g_VeclocityX = 0;
+            }
+            if (g_VeclocityY < 0)
+            {
+                playerDirection = Direction.Left;
+                transform.Rotate(0, 180, 0);
             }
         }
     }
