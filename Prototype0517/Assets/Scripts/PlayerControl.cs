@@ -45,7 +45,6 @@ public class PlayerControl : MonoBehaviour
     public float Speed = 7.0f;
     bool duringRun = false;
     public float g_VeclocityX;
-    public float g_VeclocityY;
     //方向変更用
     Direction playerDirection;
     bool turnOverEnable = false;
@@ -78,7 +77,7 @@ public class PlayerControl : MonoBehaviour
         addCount = 0;
         idle_Time = 0;
         outArea = GameObject.Find("OutArea");
-        playerDirection = Direction.Up;
+        playerDirection = Direction.Right;
         // Animatorコンポーネントを取得する
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
@@ -93,23 +92,18 @@ public class PlayerControl : MonoBehaviour
 
         CheckisGrounded();
 
-        //if (!Input.GetButton("Horizontal")&& !Input.GetButtonDown("Horizontal"))
-        //{
-            g_VeclocityX = Input.GetAxis("Vertical");              // 入力デバイスの水平軸をg_VeclocityXで定義
-        //}
-        //if (!Input.GetButton("Vertical") && !Input.GetButtonDown("Vertical"))
-        //{
-            g_VeclocityY = Input.GetAxis("Horizontal");
-        //}
+
+        g_VeclocityX = Input.GetAxis("Horizontal");              // 入力デバイスの水平軸をg_VeclocityXで定義
+
         if (Input.GetButtonDown("Jump"))
         {
-            if (isGround && !anim.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+            if (isGround)
             {
                 g_duringJump = true;
                 anim.SetBool("Jump", true);
             }
         }
-        if (g_VeclocityX > 0 || g_VeclocityX < 0||g_VeclocityY<0||g_VeclocityY>0)
+        if (g_VeclocityX > 0 || g_VeclocityX < 0 )
         {
             duringRun = true;
         }
@@ -117,8 +111,7 @@ public class PlayerControl : MonoBehaviour
         {
             duringRun = false;
         }
-
-        //Debug.Log("AddCount"+addCount);
+        
 
     }
 
@@ -155,9 +148,10 @@ public class PlayerControl : MonoBehaviour
             idle_Time += Time.deltaTime;
         }
         #endregion
+
         ChangeDirection();
         // 以下、キャラクターの移動処理
-        velocity = new Vector3(g_VeclocityX, 0, -g_VeclocityY);        // 左右のキー入力からX軸方向の移動量を取得
+        velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
 
         velocity *= Speed;       // 移動速度を掛ける
 
@@ -168,8 +162,9 @@ public class PlayerControl : MonoBehaviour
         CheckPlayerIdleState();
 
         JumpFunction();
-        
+
     }
+
     void JumpFunction()
     {
         if (g_duringJump)
@@ -197,98 +192,57 @@ public class PlayerControl : MonoBehaviour
         }
         Debug.DrawLine(ray.origin, ray.origin - new Vector3(0, DistanceToGround, 0), Color.red, 0.1f);
     }
-
+    /// <summary>
+    /// FIXME:ここをパラメータとして、いじれるようにする
+    /// </summary>
     void ChangeDirection()
     {
-
-        if (g_VeclocityX !=0)
-        {
-            g_VeclocityY = 0;
-        }
-        if (g_VeclocityY!=0)
-        {
-            g_VeclocityX = 0;
-        }
-        if (playerDirection == Direction.Up)
+        if (playerDirection == Direction.Right)
         {
             if (g_VeclocityX < 0)
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, 180, 0);
-            }
-            if(g_VeclocityY<0)
-            {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityY = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityY = 0;
+                turnOverEnable = true;
             }
         }
-        if (playerDirection == Direction.Down)
-        {
-            if (g_VeclocityX > 0)
-            {
-                playerDirection = Direction.Up;
-                transform.Rotate(0, -180, 0);
-            }
-            if (g_VeclocityY < 0)
-            {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityY = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityY = 0;
-            }
-        }
-
         if (playerDirection == Direction.Left)
         {
             if (g_VeclocityX > 0)
             {
-                playerDirection = Direction.Up;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityX = 0;
+                turnOverEnable = true;
             }
-            if (g_VeclocityX < 0)
+        }
+        if (turnOverEnable && playerDirection == Direction.Right)
+        {
+            if (transform.eulerAngles.y < 240)
+                transform.Rotate(new Vector3(0, 15, 0));
+            else
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityX = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, 180, 0);
+                playerDirection = Direction.Left;
+                turnOverEnable = false;
             }
         }
 
-        if (playerDirection == Direction.Right)
+        if (turnOverEnable && playerDirection == Direction.Left)
         {
-            if (g_VeclocityX > 0)
+            if (transform.eulerAngles.y >= 20)
+            {
+                transform.Rotate(new Vector3(0, 15, 0));
+            }
+            else
             {
                 playerDirection = Direction.Up;
-                transform.Rotate(0, -90, 0);
-               // g_VeclocityX = 0;
             }
-            if (g_VeclocityX < 0)
+        }
+        if (playerDirection == Direction.Up)
+        {
+            if (transform.eulerAngles.y < 80)
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, 90, 0);
-               // g_VeclocityX = 0;
+                transform.Rotate(new Vector3(0, 15, 0));
             }
-            if (g_VeclocityY < 0)
+            else
             {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, 180, 0);
+                playerDirection = Direction.Right;
+                turnOverEnable = false;
             }
         }
     }
@@ -305,7 +259,6 @@ public class PlayerControl : MonoBehaviour
         //現在の時間-停止状態の全時間帯=ゴーストが実際に動く時間
         d.time = outArea.GetComponent<ReplayScript>().p_NowTimeCount - idle_Time;
         d.v = g_VeclocityX;
-        d.h = g_VeclocityY;
         d.m_Jump = g_duringJump;
         addCount++;
         return d;
@@ -317,19 +270,15 @@ public class PlayerControl : MonoBehaviour
     /// </summary>
     public void CheckPlayerIdleState()
     {
-        if (g_VeclocityX == 0 && isGround &&g_VeclocityY==0)
+        if (g_VeclocityX == 0 && isGround)
         {
             player_NowState = PlayerState.Idle;
         }
-        else if(!isGround)
+        else if (!isGround)
         {
             player_NowState = PlayerState.Move;
         }
-        else if(g_VeclocityX!=0)
-        {
-            player_NowState = PlayerState.Move;
-        }
-        else if (g_VeclocityY != 0)
+        else if (g_VeclocityX != 0)
         {
             player_NowState = PlayerState.Move;
         }
