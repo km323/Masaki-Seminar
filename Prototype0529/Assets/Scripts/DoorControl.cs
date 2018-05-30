@@ -8,6 +8,7 @@ public class DoorControl : MonoBehaviour
     GameObject ClearEff;
     GameObject worldLight;
     GameObject ui;
+    
     bool playable;
     // Use this for initialization
     void Start()

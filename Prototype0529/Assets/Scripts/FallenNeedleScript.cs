@@ -52,6 +52,7 @@ public class FallenNeedleScript : MonoBehaviour
         {
             if (tag == "GhostTrap")
             {
+
                 ghostTrapVisible = false;
                 PlayerPrefsX.SetBool("ghostTrapVisible", ghostTrapVisible);
             }
