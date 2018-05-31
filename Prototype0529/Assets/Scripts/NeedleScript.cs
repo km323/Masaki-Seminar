@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/// <summary>
+/// これは針をコントロールするクラス
+/// </summary>
 public class NeedleScript : MonoBehaviour {
     public bool hit;
     public bool hitGhost;

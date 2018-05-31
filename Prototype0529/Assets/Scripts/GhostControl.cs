@@ -1,63 +1,70 @@
 ﻿
 using UnityEngine;
 using System.Collections;
+/// <summary>
+/// これはゴーストを移動させる関数
+/// </summary>
+
 
 // 必要なコンポーネントの列記
 [RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Rigidbody))]
 
 public class GhostControl : MonoBehaviour
 {
+    //参照
     GameObject outArea;
-    float animSpeed;              // アニメーション再生速度設定
+    GameObject player;
 
-    // 以下キャラクターコントローラ用パラメタ
-    // 前進速度
+    // アニメーション再生速度設定
+    float animSpeed;
+
+    // 移動関連
     float Speed;
     bool duringRun = false;
+    [HideInInspector]
     public float g_VeclocityX;
-    public float g_VeclocityY;
+    Vector3 velocity;
+
     //方向変更用
     Direction playerDirection;
-    bool turnOverEnable = false;
+    bool turnOverEnable;
 
-    // ジャンプ威力
+    // ジャンプ用
     float jumpPower;
+    [HideInInspector]
     public bool g_duringJump = false;
 
-    //rRigidbody
+    //コンポーネント
     private Rigidbody rb;
-    // キャラクターコントローラ（カプセルコライダ）の移動量
-    private Vector3 velocity;
-    // キャラにアタッチされるアニメーターへの参照
     private Animator anim;
 
-    //Playerの参照
-    GameObject player;
     // 初期化
     void Start()
     {
+        //参照
         player = GameObject.Find("Player");
         outArea = GameObject.Find("OutArea");
-        playerDirection = Direction.Up;
-        // Animatorコンポーネントを取得する
-        anim = GetComponent<Animator>();
-        rb = GetComponent<Rigidbody>();
 
+        //プロパティ
+        playerDirection = Direction.Up;
         animSpeed = player.GetComponent<PlayerControl>().animSpeed;
         Speed = player.GetComponent<PlayerControl>().Speed;
         jumpPower = player.GetComponent<PlayerControl>().jumpPower;
+
+        //コンポーネント
+        anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody>();
     }
     private void Update()
     {
+        //アニメーション設定
         anim.SetBool("Jump", g_duringJump);
         anim.SetBool("Run", duringRun);
         anim.speed = animSpeed;
 
-
-        rb.useGravity = true;//ジャンプ中に重力を切るので、それ以外は重力の影響を受けるようにする
-        if (g_VeclocityX > 0 || g_VeclocityX < 0 || g_VeclocityY < 0 || g_VeclocityY > 0)
+        //移動判定
+        if (g_VeclocityX > 0 || g_VeclocityX < 0)
         {
             duringRun = true;
         }
@@ -71,18 +78,29 @@ public class GhostControl : MonoBehaviour
     void FixedUpdate()
     {
         ChangeDirection();
-        // 以下、キャラクターの移動処理
-        velocity = new Vector3(g_VeclocityX, 0, -g_VeclocityY);        // 左右のキー入力からX軸方向の移動量を取得
 
-        velocity *= Speed;       // 移動速度を掛ける
-
-        if (!turnOverEnable)
-            // 左右のキー入力でキャラクターを移動させる
-            transform.localPosition += velocity * Time.fixedDeltaTime;
+        MoveFunction();
 
         JumpFunction();
-        
+
     }
+    /// <summary>
+    /// これは移動をコントロールする関数
+    /// g_VeclocityXを頼って、横に移動させている
+    /// </summary>
+    void MoveFunction()
+    {
+        // 以下、キャラクターの移動処理
+        velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
+        velocity *= Speed;       // 移動速度を掛ける
+        transform.localPosition += velocity * Time.fixedDeltaTime;        // 左右のキー入力でキャラクターを移動させる
+
+    }
+
+    /// <summary>
+    /// これはジャンプをコントロールする関数
+    /// g_duringJumpがtrueの時、上に向く力を与える,それ以外の場合は重力を与える
+    /// </summary>
     void JumpFunction()
     {
         if (g_duringJump)
@@ -96,98 +114,60 @@ public class GhostControl : MonoBehaviour
             rb.velocity += Physics.gravity * Time.deltaTime;
         }
     }
+    /// <summary>
+    /// これは方向を変える関数
+    /// HACK:方向を変える速度を編集できるようにする
+    /// </summary>
     void ChangeDirection()
     {
-        if (g_VeclocityX != 0)
-        {
-            g_VeclocityY = 0;
-        }
-        if (g_VeclocityY != 0)
-        {
-            g_VeclocityX = 0;
-        }
-        if (playerDirection == Direction.Up)
+        if (playerDirection == Direction.Right)
         {
             if (g_VeclocityX < 0)
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, 180, 0);
-            }
-            if (g_VeclocityY < 0)
-            {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityY = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityY = 0;
+                turnOverEnable = true;
             }
         }
-        if (playerDirection == Direction.Down)
-        {
-            if (g_VeclocityX > 0)
-            {
-                playerDirection = Direction.Up;
-                transform.Rotate(0, -180, 0);
-            }
-            if (g_VeclocityY < 0)
-            {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityY = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityY = 0;
-            }
-        }
-
         if (playerDirection == Direction.Left)
         {
             if (g_VeclocityX > 0)
             {
-                playerDirection = Direction.Up;
-                transform.Rotate(0, 90, 0);
-                //g_VeclocityX = 0;
+                turnOverEnable = true;
             }
-            if (g_VeclocityX < 0)
+        }
+        if (turnOverEnable && playerDirection == Direction.Right)
+        {
+            if (transform.eulerAngles.y < 270)
+                transform.Rotate(new Vector3(0, 15, 0));
+            else
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, -90, 0);
-                //g_VeclocityX = 0;
-            }
-            if (g_VeclocityY > 0)
-            {
-                playerDirection = Direction.Right;
-                transform.Rotate(0, 180, 0);
+                playerDirection = Direction.Left;
+                turnOverEnable = false;
             }
         }
 
-        if (playerDirection == Direction.Right)
+        if (turnOverEnable && playerDirection == Direction.Left)
         {
-            if (g_VeclocityX > 0)
+            if (transform.eulerAngles.y >= 20)
+            {
+                transform.Rotate(new Vector3(0, 15, 0));
+            }
+            else
             {
                 playerDirection = Direction.Up;
-                transform.Rotate(0, -90, 0);
-                // g_VeclocityX = 0;
             }
-            if (g_VeclocityX < 0)
+        }
+        if (playerDirection == Direction.Up)
+        {
+            if (transform.eulerAngles.y < 80)
             {
-                playerDirection = Direction.Down;
-                transform.Rotate(0, 90, 0);
-                // g_VeclocityX = 0;
+                transform.Rotate(new Vector3(0, 15, 0));
             }
-            if (g_VeclocityY < 0)
+            else
             {
-                playerDirection = Direction.Left;
-                transform.Rotate(0, 180, 0);
+                playerDirection = Direction.Right;
+                turnOverEnable = false;
             }
         }
     }
-    
+
 }

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 /// <summary>
 /// これは落ちる針をコントロールするクラスです
-/// UI_TEXT二つが必要です。
 /// </summary>
 public class FallenNeedleScript : MonoBehaviour
 {
+    [HideInInspector]
     public bool trapEnable;
+    [HideInInspector]
     public bool ghostTrapVisible;
+
     // Use this for initialization
     void Start()
     {
@@ -21,6 +23,7 @@ public class FallenNeedleScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //落下させる
         if (trapEnable)
         {
             GetComponent<Rigidbody>().isKinematic = false;
@@ -45,14 +48,13 @@ public class FallenNeedleScript : MonoBehaviour
     {
         if (collision.gameObject.name == "Player")
         {
-            ghostTrapVisible = true;
-            PlayerPrefsX.SetBool("ghostTrapVisible", ghostTrapVisible);
+            //ghostTrapVisible = true;
+            //PlayerPrefsX.SetBool("ghostTrapVisible", ghostTrapVisible);
         }
         if (collision.gameObject.name == "Ghost")
         {
             if (tag == "GhostTrap")
             {
-
                 ghostTrapVisible = false;
                 PlayerPrefsX.SetBool("ghostTrapVisible", ghostTrapVisible);
             }

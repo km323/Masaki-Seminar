@@ -1,17 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class FallenTrapScript : MonoBehaviour
+/// <summary>
+/// これはプレス機の罠をコントロールする関数
+/// </summary>
+public class PressMachineTrapScript : MonoBehaviour
 {
-    GameObject ghostFallenTrapSet;
-    bool ghost_Trap_Visible;
+    //参照
+    GameObject parentObj;
+    GameObject eff_Disapear;
+
+
+    bool effPlayable = true;
+    public bool ghost_Trap_Visible=false;
+
     // Use this for initialization
     void Start()
     {
-        ghostFallenTrapSet = GameObject.Find("GhostFallenTrapSet");
-        ghost_Trap_Visible = PlayerPrefsX.GetBool("Visible" + gameObject.name);
+        parentObj = transform.root.gameObject;
 
+        if (tag == "GhostTrap")
+        {
+            ghost_Trap_Visible = PlayerPrefsX.GetBool("Visible" + gameObject.name);
+        }
+        eff_Disapear = GameObject.Find("Disapear");
     }
 
     // Update is called once per frame
@@ -21,7 +33,8 @@ public class FallenTrapScript : MonoBehaviour
         {
             if (ghost_Trap_Visible)
             {
-                foreach (Transform child in ghostFallenTrapSet.transform)
+                //子オブジェのRenderコンポーネントをTrueにする
+                foreach (Transform child in parentObj.transform)
                 {
                     if (child.GetComponent<Renderer>() != null)
                         child.GetComponent<Renderer>().enabled = true;
@@ -35,7 +48,8 @@ public class FallenTrapScript : MonoBehaviour
             }
             else
             {
-                foreach (Transform child in ghostFallenTrapSet.transform)
+                //子オブジェのRenderコンポーネントをFalseにする
+                foreach (Transform child in parentObj.transform)
                 {
                     if (child.GetComponent<Renderer>() != null)
                         child.GetComponent<Renderer>().enabled = false;
@@ -53,14 +67,20 @@ public class FallenTrapScript : MonoBehaviour
     {
         if (collision.gameObject.name == "Player")
         {
-            ghost_Trap_Visible = true;
-            PlayerPrefsX.SetBool("Visible" + gameObject.name.Insert(0, "Ghost"), ghost_Trap_Visible);
+            //ghost_Trap_Visible = true;
+            //PlayerPrefsX.SetBool("Visible" + gameObject.name.Insert(0, "Ghost"), ghost_Trap_Visible);
         }
         if (collision.gameObject.name == "Ghost")
         {
             if (tag == "GhostTrap")
             {
-                transform.Find("Disapear").GetComponent<ParticleSystem>().Play();
+                //消失のエフェクトを再生
+                if (effPlayable)
+                {
+                    eff_Disapear.transform.position = transform.position;
+                    eff_Disapear.GetComponent<ParticleSystem>().Play();
+                    effPlayable = false;
+                }
                 ghost_Trap_Visible = false;
                 PlayerPrefsX.SetBool("Visible" + gameObject.name, ghost_Trap_Visible);
             }

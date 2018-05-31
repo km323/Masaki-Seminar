@@ -61,12 +61,12 @@ public class StoneScript : MonoBehaviour
             //床に落ちたら、左へのパワーを与える
             if (collision.gameObject.name == "Floor2")
             {
-                transform.GetComponent<Rigidbody>().AddForce(-10, 0, 0,ForceMode.VelocityChange);
+                transform.GetComponent<Rigidbody>().AddForce(-15, 0, 0,ForceMode.VelocityChange);
             }
             //床に落ちたら、左へのパワーを与える
             if (collision.gameObject.name == "Floor1")
             {
-                transform.GetComponent<Rigidbody>().AddForce(-6, 0, 0, ForceMode.VelocityChange);
+                transform.GetComponent<Rigidbody>().AddForce(-8, 0, 0, ForceMode.VelocityChange);
             }
         }
     }

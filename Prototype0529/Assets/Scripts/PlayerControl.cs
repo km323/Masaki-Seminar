@@ -1,20 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-enum Direction
+
+/// <summary>
+/// これはプレイヤーを移動させる、プレイヤーの情報を記録するクラス
+/// </summary>
+
+/// <summary>
+/// これは方向をコントロールする列挙体
+/// </summary>
+public enum Direction
 {
     Right,
     Left,
     Up,
-    Down,
 }
+/// <summary>
+/// これは移動状態をコントロールする列挙体
+/// </summary>
+public enum PlayerState
+{
+    Move,
+    Idle,
+}
+/// <summary>
+/// これはプレイヤーのデータを保存する列挙体
+/// </summary>
 public class Data
 {
     public bool m_Jump;
     public float v;
-    public float h;
     public float time;
 }
 // 必要なコンポーネントの列記
@@ -23,82 +38,88 @@ public class Data
 
 public class PlayerControl : MonoBehaviour
 {
+    //参照
     GameObject outArea;
+
     /// <summary>
-    /// プレイヤー情報を一時保存するList動的配列
+    ///情報保存用
     /// </summary>
-    public List<Data> dataList = new List<Data>();
-    public float addCount;
-    //立ち留まる時間
-    private float idle_Time;
+    public List<Data> dataList = new List<Data>();// プレイヤー情報を一時保存するList動的配列
+
+    public int add_Data_Count;
+   
+    public const int MAX_DATA_STORGE_COUNT = 5000;
+
+    float idle_Time;
 
     PlayerState player_NowState;
 
-    //プレイヤー情報を保存する配列
-    public const int MAXTIME = 5000;
-
-    // アニメーション再生速度設定
-    public float animSpeed;
-
-    // 以下キャラクターコントローラ用パラメタ
-    // 前進速度
-    public float Speed;
+    //アニメーション関連
+    public float animSpeed=1.5f;
     bool duringRun = false;
+
+    //移動関連
+    public float Speed;
+    [HideInInspector]
     public float g_VeclocityX;
+    Vector3 velocity;
+
     //方向変更用
     Direction playerDirection;
     bool turnOverEnable = false;
 
-    // ジャンプ威力
+    // ジャンプ用
     public float jumpPower;
+    [HideInInspector]
     public bool g_duringJump = false;
-    //rRigidbody
-    private Rigidbody rb;
-    // キャラクターコントローラ（カプセルコライダ）の移動量
-    private Vector3 velocity;
-    // キャラにアタッチされるアニメーターへの参照
-    private Animator anim;
+
+    //コンポーネント
+    Rigidbody rb;
+    Animator anim;
 
     /// <summary>
-    /// 接地判定用Ray
-    /// </summary>
-    //　レイを飛ばす位置
+    /// 接地判定
+    /// <summary>
     Ray ray;
-    public const float DistanceToGround = 0.15f;
-    //　レイが地面に到達しているかどうか
-    private bool isGround = false;
+    bool isGround = false;
+    public const float DISTANCE_TO_GROUND = 0.15f;
+
 
     // 初期化
     void Start()
     {
-        //capsuleCollider = GetComponent<CapsuleCollider>();
-        addCount = 0;
-        idle_Time = 0;
+        //参照
         outArea = GameObject.Find("OutArea");
+
+        //カウンター
+        add_Data_Count = 0;
+        idle_Time = 0;
+
+        //プロパティ
         playerDirection = Direction.Right;
-        // Animatorコンポーネントを取得する
+
+        //コンポーネント
         anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
     }
     private void Update()
     {
-        Debug.Log(addCount);
-        anim.SetBool("Jump", false);
-        anim.SetBool("Run", duringRun);
-        anim.speed = animSpeed;                             // Animatorのモーション再生速度に animSpeedを設定する
-
-        rb.useGravity = true;//ジャンプ中に重力を切るので、それ以外は重力の影響を受けるようにする
-
-        CheckisGrounded();
-
 //ねっぽ
+//クリア時、操作禁止
         if (!DoorControl.canControlPlayer)
             return;
 
-        //入力デバイスの水平軸をg_VeclocityXで定義
+        //アニメーション設定
+        anim.SetBool("Jump", false);
+        anim.SetBool("Run", duringRun);
+        anim.speed = animSpeed;
+
+        //接地判定
+        CheckisGrounded();
+
+        //入力
         g_VeclocityX = Input.GetAxis("Horizontal");
 
-        //ジャンプキーを取得
         if (Input.GetButtonDown("Jump"))
         {
             if (isGround)
@@ -108,9 +129,8 @@ public class PlayerControl : MonoBehaviour
             }
         }
 
-
-        
-        if (g_VeclocityX > 0 || g_VeclocityX < 0 )
+        //移動判定
+        if (g_VeclocityX > 0 || g_VeclocityX < 0)
         {
             duringRun = true;
         }
@@ -118,14 +138,7 @@ public class PlayerControl : MonoBehaviour
         {
             duringRun = false;
         }
-
-        ChangeDirection();
-
-        // 以下、キャラクターの移動処理
-        velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
-
-        velocity *= Speed;       // 移動速度を掛ける
-        CheckPlayerIdleState();
+        
 
     }
 
@@ -133,19 +146,21 @@ public class PlayerControl : MonoBehaviour
     void FixedUpdate()
     {
 //ねっぽ
+//クリア時方向を上に向かわせる
         if (!DoorControl.canControlPlayer)
         {
                 transform.eulerAngles = new Vector3(0, 0, 0);
                 transform.localPosition += Vector3.forward * Time.fixedDeltaTime;
             return;
         }
+        
         #region 情報保存
         //プレイヤーが移動しているかどうかをチェック
         if (player_NowState == PlayerState.Move||g_duringJump)
         {
             //もし保存できる最大値以下だったら
             //フレームごとに、プレイヤーの情報を保存する
-            if (dataList.Count < MAXTIME)
+            if (dataList.Count < MAX_DATA_STORGE_COUNT)
             {
                 dataList.Add(GetData());
             }
@@ -158,7 +173,6 @@ public class PlayerControl : MonoBehaviour
         for (int i = 0; i < dataList.Count; i++)
         {
             outArea.GetComponent<ReplayScript>().velocitys[i] = dataList[i].v;
-            outArea.GetComponent<ReplayScript>().horizontals[i] = dataList[i].h;
             outArea.GetComponent<ReplayScript>().jumps[i] = dataList[i].m_Jump;
             outArea.GetComponent<ReplayScript>().times[i] = dataList[i].time;
         }
@@ -169,13 +183,33 @@ public class PlayerControl : MonoBehaviour
         }
         #endregion
 
+        CheckPlayerIdleState();
+
+        ChangeDirection();
+
+        MoveFunction();
+
         JumpFunction();
-        // 左右のキー入力でキャラクターを移動させる
-        if (!turnOverEnable)
-            transform.localPosition += velocity * Time.fixedDeltaTime;
        
     }
 
+    /// <summary>
+    /// これは移動をコントロールする関数
+    /// g_VeclocityXを頼って、横に移動させている
+    /// </summary>
+    void MoveFunction()
+    {
+        // 以下、キャラクターの移動処理
+        velocity = new Vector3(g_VeclocityX, 0, 0);        // 左右のキー入力からX軸方向の移動量を取得
+        velocity *= Speed;       // 移動速度を掛ける
+        transform.localPosition += velocity * Time.fixedDeltaTime;        // 左右のキー入力でキャラクターを移動させる
+
+    }
+
+    /// <summary>
+    /// これはジャンプをコントロールする関数
+    /// g_duringJumpがtrueの時、上に向く力を与える,それ以外の場合は重力を与える
+    /// </summary>
     void JumpFunction()
     {
         if (g_duringJump)
@@ -189,11 +223,16 @@ public class PlayerControl : MonoBehaviour
             rb.velocity += Physics.gravity * Time.deltaTime;
         }
     }
+
+    /// <summary>
+    /// これは接地判定用の関数
+    /// ↓に向く射線を発射させ、何かとぶつかったら、接地とみなす
+    /// </summary>
     void CheckisGrounded()
     {
         RaycastHit hit;
         ray = new Ray(transform.position, Vector3.down);
-        if (Physics.Raycast(ray, out hit, DistanceToGround))
+        if (Physics.Raycast(ray, out hit, DISTANCE_TO_GROUND))
         {
             isGround = true;
         }
@@ -201,10 +240,12 @@ public class PlayerControl : MonoBehaviour
         {
             isGround = false;
         }
-        Debug.DrawLine(ray.origin, ray.origin - new Vector3(0, DistanceToGround, 0), Color.red, 0.1f);
+        Debug.DrawLine(ray.origin, ray.origin - new Vector3(0, DISTANCE_TO_GROUND, 0), Color.red, 0.1f);
     }
+
     /// <summary>
-    /// FIXME:ここをパラメータとして、いじれるようにする
+    /// これは方向を変える関数
+    /// HACK:方向を変える速度を編集できるようにする
     /// </summary>
     void ChangeDirection()
     {
@@ -271,17 +312,20 @@ public class PlayerControl : MonoBehaviour
         d.time = outArea.GetComponent<ReplayScript>().p_NowTimeCount - idle_Time;
         d.v = g_VeclocityX;
         d.m_Jump = g_duringJump;
-        addCount++;
+        add_Data_Count++;
         return d;
     }
 
     /// <summary>
     /// これはプレイヤーの移動状態をチェックするメソッドです。
-    /// 停止ならlayer_NowState = PlayerState.Idle;逆ー＞layer_NowState = PlayerState.Move
     /// </summary>
     public void CheckPlayerIdleState()
     {
-        if (g_VeclocityX == 0 && isGround )
+        //全部保存
+        //player_NowState = PlayerState.Move;
+
+        //移動するときだけ保存
+        if (g_VeclocityX == 0 && isGround)
         {
             player_NowState = PlayerState.Idle;
         }

@@ -7,7 +7,7 @@ public class Stage2Script : MonoBehaviour {
     GameObject FallenTrap2;
 
     GameObject GhostFallenTrap;
-
+    GameObject GhostFallenTrap2;
     bool fallenEnable;
     bool fallenEnable2;
 
@@ -23,18 +23,9 @@ public class Stage2Script : MonoBehaviour {
         fallenEnable = true;
 
         FallenTrap2 = GameObject.Find("FallenTrapSet2");
+        GhostFallenTrap2 = GameObject.Find("GhostFallenTrapSet2");
         fallenEnable2 = true;
 
-        foreach (Transform child in GhostFallenTrap.transform)
-        {
-            if (child.GetComponent<Renderer>() != null)
-                child.GetComponent<Renderer>().enabled = false;
-            foreach (Transform secondChild in child)
-            {
-                if (secondChild.GetComponent<Renderer>() != null)
-                    secondChild.GetComponent<Renderer>().enabled = false;
-            }
-        }
     }
 
     // Update is called once per frame
@@ -64,14 +55,20 @@ public class Stage2Script : MonoBehaviour {
         if (fallenEnable2)
         {
             if (FallenTrap2.transform.localPosition.y > 1.0)
+            {
                 FallenTrap2.transform.position -= new Vector3(0, fallenSpeed2, 0);
+                GhostFallenTrap2.transform.position -= new Vector3(0, fallenSpeed2, 0);
+            }
             else
                 fallenEnable2 = !fallenEnable2;
         }
         else
         {
             if (FallenTrap2.transform.localPosition.y < 6)
+            {
                 FallenTrap2.transform.position += new Vector3(0, raiseSpeed2, 0);
+                GhostFallenTrap2.transform.position += new Vector3(0, raiseSpeed2, 0);
+            }
             else
                 fallenEnable2 = !fallenEnable2;
         }

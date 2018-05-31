@@ -18,8 +18,8 @@ public class NeedleSetScript : MonoBehaviour {
 	void Update () {
 		if(needle.GetComponent<NeedleScript>().hit)
         {
-            ghostTrapVisible = true;
-            PlayerPrefsX.SetBool("ghostTrapVisible" + gameObject.name.Insert(0, "Ghost"), ghostTrapVisible);
+            //ghostTrapVisible = true;
+            //PlayerPrefsX.SetBool("ghostTrapVisible" + gameObject.name.Insert(0, "Ghost"), ghostTrapVisible);
             needle.GetComponent<NeedleScript>().hit = false;
         }
         if (tag == "GhostTrap")

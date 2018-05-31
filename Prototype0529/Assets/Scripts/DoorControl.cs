@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class DoorControl : MonoBehaviour
 {
-    public static bool canControlPlayer;
+
+    //参照
     GameObject ClearEff;
     GameObject worldLight;
     GameObject ui;
-    
-    bool playable;
+
+    [HideInInspector]
+    public static bool canControlPlayer;
+    bool eff_Playable;
     // Use this for initialization
     void Start()
     {
@@ -22,16 +25,17 @@ public class DoorControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (playable)
+        if (eff_Playable)
         {
             if (!ClearEff.GetComponent<ParticleSystem>().isPlaying)
             {
                 ClearEff.GetComponent<ParticleSystem>().Play();
             }
             ui.GetComponent<UIScript>().turnLightOn = true;
+            //HACK:必要ないかもしれない
             worldLight.GetComponent<Light>().intensity = 2f;
             worldLight.GetComponent<Light>().color = Color.white;
-            playable = false;
+            eff_Playable = false;
 
         }
     }
@@ -40,7 +44,7 @@ public class DoorControl : MonoBehaviour
     {
         if (other.gameObject.name == "Player")
         {
-            playable = true;
+            eff_Playable = true;
             Animator doorAnimator = GameObject.Find("door").GetComponent<Animator>();
             doorAnimator.SetTrigger("OpenDoor");
             canControlPlayer = false;

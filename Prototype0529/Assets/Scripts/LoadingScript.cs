@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class loading : MonoBehaviour {
+public class LoadingScript : MonoBehaviour {
     public GameObject loadingUI;
     public GameObject startButton;
 

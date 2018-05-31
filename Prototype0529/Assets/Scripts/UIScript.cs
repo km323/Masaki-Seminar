@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 /// <summary>
 /// これはUI全般をコントロールするクラスです
-/// UI_TEXT二つが必要です。
 /// </summary>
 public class UIScript : MonoBehaviour {
-    public Text lightSwitch_Text;
-    public Text playerlife_Text;
 
+
+    //参照
     GameObject lightOn_Button;
     GameObject retry_Button;
     GameObject lifeText;
@@ -17,18 +16,22 @@ public class UIScript : MonoBehaviour {
     GameObject worldLight;
     GameObject player;
 
+    //コンポーネント
+    public Text lightSwitch_Text;
+    public Text playerlife_Text;
+
     public bool turnLightOn;
     // Use this for initialization
     void Start () {
-        turnLightOn = false;
-
-        worldLight = GameObject.FindGameObjectWithTag("MainLight");
-
         player = GameObject.Find("Player");
-
         lightOn_Button = GameObject.Find("LightOn_Button");
         retry_Button = GameObject.Find("Retry_Button");
         lifeText = GameObject.Find("LifeText");
+
+        worldLight = GameObject.FindGameObjectWithTag("MainLight");
+
+
+        turnLightOn = false;
 
         lightOn_Button.SetActive(false);
         retry_Button.SetActive(false);
@@ -37,9 +40,6 @@ public class UIScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        //ライフ数をテキストで表示
-        playerlife_Text.text = "Life:1 " + player.GetComponent<PlayerLifeControl>().lifeCount.ToString();
-        //Debug.Log(playerlife_Text.text);
         //turnlightonフラグを頼って、ワールドライトの輝度を調整する
         if (!turnLightOn)
         {

@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class nextStage : MonoBehaviour {
-
+public class NextStage : MonoBehaviour {
+    public float toNextStage_Time=0.2f;
 	// Use this for initialization
 	void Start () {
 
@@ -18,7 +18,7 @@ public class nextStage : MonoBehaviour {
 	{
 		if (collider.gameObject.tag == "Player") {
             //一秒後に実行
-			Invoke ("LoadNextScene",0.2f);
+			Invoke ("LoadNextScene", toNextStage_Time);
 		}
 	}
 
@@ -29,7 +29,7 @@ public class nextStage : MonoBehaviour {
         int i_nowStage = int.Parse(OutArea.GetComponent<ReplayScript>().nowStageNum);
         string nextStage = (i_nowStage + 1).ToString();
 
-        //セーブデータの初期化
+        //HACK:必要か？セーブデータの初期化
         PlayerPrefs.DeleteAll();
 
         //ロードシーン
