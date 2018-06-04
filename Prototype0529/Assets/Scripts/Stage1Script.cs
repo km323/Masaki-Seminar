@@ -6,97 +6,82 @@ public class Stage1Script : MonoBehaviour
 {
     const int fallenNeedle_count = 3;
     GameObject[] fallenNeedle = new GameObject[fallenNeedle_count];
-    GameObject[] ghost_fallenNeedle = new GameObject[fallenNeedle_count];
-
-    const int remoteFloor_count = 2;
-    GameObject[] remoteFloor = new GameObject[remoteFloor_count];
-    GameObject[] ghostRemoteFloor = new GameObject[remoteFloor_count];
-    GameObject remoteSwitch;
-    GameObject ghostRemoteSwitch;
+    
+    const int remoteFloor_Count = 2;
+    GameObject[] remoteFloor = new GameObject[remoteFloor_Count];
+    GameObject remoteFloorSwitch;
 
     GameObject fallenStoneSwitch;
-    GameObject ghostFallenStoneSwitch;
     GameObject stone;
-    GameObject ghostStone;
+
+    public float Needle_FallenVeloc = -2;
+
+    public float Stone_FallenVeloc = -3;
+    public float Stone_First_Hit_Force = -15;
+    public float Stone_Second_Hit_Force = -9;
+
+    public float FallenNeedle_To_Next_distance = 2;
     // Use this for initialization
     void Start()
     {
         for (int i = 0; i < fallenNeedle_count; i++)
         {
             fallenNeedle[i] = GameObject.Find("FallenNeedle" + (i + 1));
-            ghost_fallenNeedle[i] = GameObject.Find("GhostFallenNeedle" + (i + 1));
+            fallenNeedle[i].GetComponent<FallenNeedleScript>().fallen_Veloc= Needle_FallenVeloc;
         }
 
-        for (int i = 0; i < remoteFloor_count; i++)
+        for (int i = 0; i < remoteFloor_Count; i++)
         {
             remoteFloor[i] = GameObject.Find("RemoteFloor" + (i + 1));
-            ghostRemoteFloor[i] = GameObject.Find("GhostRemoteFloor" + (i + 1));
         }
-        remoteSwitch = GameObject.Find("RemoteSwitch");
-        ghostRemoteSwitch = GameObject.Find("GhostRemoteSwitch");
+        remoteFloorSwitch = GameObject.Find("RemoteSwitch");
 
         fallenStoneSwitch = GameObject.Find("FallenStoneSwitch");
-        ghostFallenStoneSwitch = GameObject.Find("GhostFallenStoneSwitch");
 
         stone = GameObject.Find("Stone");
-        ghostStone = GameObject.Find("GhostStone");
     }
 
     // Update is called once per frame
     void Update()
     {
-        //落石
+
+        //スイッチを踏んだら、岩を移動させる
         if (fallenStoneSwitch.GetComponent<SwitchScript>().trapEnable)
         {
-            stone.GetComponent<StoneScript>().fallenEnable = true;
-        }
-        if (ghostFallenStoneSwitch.GetComponent<SwitchScript>().ghostTrapEnable)
-        {
-            ghostStone.GetComponent<StoneScript>().fallenEnable = true;
+            stone.GetComponent<FallenStoneScript>().fallenEnable = true;
+            stone.GetComponent<FallenStoneScript>().
+                            SetFallenStone(Stone_FallenVeloc, Stone_First_Hit_Force, Stone_Second_Hit_Force);
         }
 
-        //落下する床
-        if (remoteSwitch.GetComponent<SwitchScript>().trapEnable)
+        //スイッチを踏んだら、針と床両方を落下させる
+        if (remoteFloorSwitch.GetComponent<SwitchScript>().trapEnable)
         {
-            for (int i = 0; i < remoteFloor_count; i++)
+            //床
+            for (int i = 0; i < remoteFloor_Count; i++)
             {
                 remoteFloor[i].GetComponent<RemoteFloorScript>().fallenDownEnable = true;
-                PlayerPrefsX.SetBool("ghostTrapVisible" + remoteFloor[i].name.Insert(0, "Ghost"), true);
             }
+            //矢を降らせる
             fallenNeedle[0].GetComponent<FallenNeedleScript>().trapEnable = true;
 
-            remoteSwitch.GetComponent<SwitchScript>().trapEnable = false;
+            remoteFloorSwitch.GetComponent<SwitchScript>().trapEnable = false;
         }
 
         FallenByDistance(fallenNeedle_count);
-
-        if (ghostRemoteSwitch.GetComponent<SwitchScript>().ghostTrapEnable)
-        {
-            for (int i = 0; i < remoteFloor_count; i++)
-            {
-                ghostRemoteFloor[i].GetComponent<RemoteFloorScript>().fallenDownEnable = true;
-            }
-            //矢を降らせる
-            ghost_fallenNeedle[0].GetComponent<FallenNeedleScript>().trapEnable = true;
-
-            ghostRemoteSwitch.GetComponent<SwitchScript>().ghostTrapEnable = false;
-        }
-
-        GhostFallenByDistance(fallenNeedle_count);
     }
-
+    /// <summary>
+    /// これは針を一個ずつ落下させる関数
+    /// </summary>
+    /// <param name="fallenNeedle_count"></param>
     public void FallenByDistance(int fallenNeedle_count)
     {
-        //矢を降らせる
-        int fallenNeedle_distance = 2;
-
         if (!fallenNeedle[fallenNeedle_count - 1].GetComponent<FallenNeedleScript>().trapEnable)
         {
             for (int i = 0; i < fallenNeedle_count; i++)
             {
                 if (i != 0)
                 {
-                    if (fallenNeedle[i].transform.position.y - fallenNeedle[i - 1].transform.position.y > fallenNeedle_distance)
+                    if (fallenNeedle[i].transform.position.y - fallenNeedle[i - 1].transform.position.y > FallenNeedle_To_Next_distance)
                     {
                         fallenNeedle[i].GetComponent<FallenNeedleScript>().trapEnable = true;
                     }
@@ -105,23 +90,4 @@ public class Stage1Script : MonoBehaviour
         }
     }
 
-    public void GhostFallenByDistance(int fallenNeedle_count)
-    {
-        //矢を降らせる
-        int fallenNeedle_distance = 2;
-
-        if (!ghost_fallenNeedle[fallenNeedle_count - 1].GetComponent<FallenNeedleScript>().trapEnable)
-        {
-            for (int i = 0; i < fallenNeedle_count; i++)
-            {
-                if (i != 0)
-                {
-                    if (ghost_fallenNeedle[i].transform.position.y - ghost_fallenNeedle[i - 1].transform.position.y > fallenNeedle_distance)
-                    {
-                        ghost_fallenNeedle[i].GetComponent<FallenNeedleScript>().trapEnable = true;
-                    }
-                }
-            }
-        }
-    }
 }

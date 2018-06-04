@@ -8,69 +8,36 @@ public class Stage2Script : MonoBehaviour {
 
     GameObject GhostFallenTrap;
     GameObject GhostFallenTrap2;
-    bool fallenEnable;
+
+
     bool fallenEnable2;
 
     public float fallenSpeed=0.5f;
     public float raiseSpeed=0.1f;
 
+    public float distanceToTop = 5.5f;
+    public float distanceToBottom = 1;
+
     public float fallenSpeed2 = 0.5f;
     public float raiseSpeed2 = 0.5f;
+
+    public float distanceToTop2 = 5.5f;
+    public float distanceToBottom2 = 1;
     // Use this for initialization
     void Start () {
         FallenTrap = GameObject.Find("FallenTrapSet");
-        GhostFallenTrap = GameObject.Find("GhostFallenTrapSet");
-        fallenEnable = true;
-
         FallenTrap2 = GameObject.Find("FallenTrapSet2");
-        GhostFallenTrap2 = GameObject.Find("GhostFallenTrapSet2");
-        fallenEnable2 = true;
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (fallenEnable)
-        {
-            if (FallenTrap.transform.localPosition.y > 1)
-            {
-                FallenTrap.transform.position -= new Vector3(0, fallenSpeed, 0);
-                GhostFallenTrap.transform.position -= new Vector3(0, fallenSpeed, 0);
-            }
-            else
-                fallenEnable = !fallenEnable;
-        }
-        else
-        {
-            if (FallenTrap.transform.localPosition.y < 5.5)
-            {
-                FallenTrap.transform.position += new Vector3(0, raiseSpeed, 0);
-                GhostFallenTrap.transform.position += new Vector3(0, raiseSpeed, 0);
-            }
-            else
-                fallenEnable = !fallenEnable;
-        }
+        FallenTrap.GetComponent<PressMachineTrapScript>().
+            SetTwoWaysTrap(distanceToTop, distanceToBottom, fallenSpeed, raiseSpeed);
 
-        if (fallenEnable2)
-        {
-            if (FallenTrap2.transform.localPosition.y > 1.0)
-            {
-                FallenTrap2.transform.position -= new Vector3(0, fallenSpeed2, 0);
-                GhostFallenTrap2.transform.position -= new Vector3(0, fallenSpeed2, 0);
-            }
-            else
-                fallenEnable2 = !fallenEnable2;
-        }
-        else
-        {
-            if (FallenTrap2.transform.localPosition.y < 6)
-            {
-                FallenTrap2.transform.position += new Vector3(0, raiseSpeed2, 0);
-                GhostFallenTrap2.transform.position += new Vector3(0, raiseSpeed2, 0);
-            }
-            else
-                fallenEnable2 = !fallenEnable2;
-        }
+        FallenTrap2.GetComponent<PressMachineTrapScript>().
+            SetTwoWaysTrap(distanceToTop2, distanceToBottom2, fallenSpeed2, raiseSpeed2);
+        
     }
 }
